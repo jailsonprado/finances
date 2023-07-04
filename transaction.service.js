@@ -1,32 +1,48 @@
 require("dotenv").config();
 const { format } = require("date-fns");
+const winston = require("winston");
+const { createPool } = require("mysql2/promise");
+
+// Configuração do logger
+const logger = winston.createLogger({
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: "error.log" }),
+  ],
+});
+
+let pool;
+
+async function connectToDatabase() {
+  try {
+    pool = createPool({
+      host: "finances1.mysql.uhserver.com",
+      user: process.env.USERDATABASE,
+      password: process.env.PASSWORD,
+      database: process.env.DATABASE,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+      debug: false,
+    });
+
+    console.log("Conexão com o banco de dados estabelecida com sucesso");
+  } catch (error) {
+    console.error("Erro ao conectar ao banco de dados:", error);
+    logger.error("Erro ao conectar ao banco de dados:", error);
+    throw error;
+  }
+}
 
 function formatDate(date) {
   return format(new Date(date), "dd/MM/yyyy");
 }
-const mysql = require("mysql2/promise");
-
-let connection;
-
-async function connectToDatabase() {
-  connection = await mysql.createConnection({
-    host: "finances1.mysql.uhserver.com",
-    user: process.env.USERDATABASE,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE,
-  });
-  console.log("Conexão com o banco de dados estabelecida com sucesso");
-  connection.connect(function (err) {
-    if (err) {
-      console.log(`connectionRequest Failed ${err.stack}`);
-    } else {
-      console.log(`DB connectionRequest Successful ${connection.threadId}`);
-    }
-  });
-}
 
 async function createTransaction(value, type, description) {
+  let connection;
+
   try {
+    connection = await pool.getConnection();
     const [result] = await connection.execute(
       "INSERT INTO Transaction (value, type, description) VALUES (?, ?, ?)",
       [value, type, description]
@@ -36,22 +52,38 @@ async function createTransaction(value, type, description) {
     return { id: newTransactionId, value, type, description };
   } catch (error) {
     console.error("Erro ao criar a transação:", error);
+    logger.error("Erro ao criar a transação:", error);
     throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 async function getAllTransactions() {
+  let connection;
+
   try {
+    connection = await pool.getConnection();
     const [rows] = await connection.execute("SELECT * FROM Transaction");
     return rows;
   } catch (error) {
     console.error("Erro ao obter todas as transações:", error);
+    logger.error("Erro ao obter todas as transações:", error);
     throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 async function getTransactionsByType(type) {
+  let connection;
+
   try {
+    connection = await pool.getConnection();
     const [rows] = await connection.execute(
       "SELECT * FROM Transaction WHERE type = ?",
       [type]
@@ -59,12 +91,20 @@ async function getTransactionsByType(type) {
     return rows;
   } catch (error) {
     console.error("Erro ao obter transações por tipo:", error);
+    logger.error("Erro ao obter transações por tipo:", error);
     throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 async function getTransactionsByTypeAndDateRange(type, startDate, endDate) {
+  let connection;
+
   try {
+    connection = await pool.getConnection();
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
@@ -77,12 +117,23 @@ async function getTransactionsByTypeAndDateRange(type, startDate, endDate) {
       "Erro ao obter transações por tipo e intervalo de datas:",
       error
     );
+    logger.error(
+      "Erro ao obter transações por tipo e intervalo de datas:",
+      error
+    );
     throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 async function updateTransaction(id, data) {
+  let connection;
+
   try {
+    connection = await pool.getConnection();
     const [result] = await connection.execute(
       "UPDATE Transaction SET createdAt = ?, type = ?, value = ?, description = ? WHERE id = ?",
       [data.createdAt, data.type, data.value, data.description, id]
@@ -94,12 +145,20 @@ async function updateTransaction(id, data) {
     return null;
   } catch (error) {
     console.error("Erro ao atualizar a transação:", error);
+    logger.error("Erro ao atualizar a transação:", error);
     throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 async function deleteTransaction(id) {
+  let connection;
+
   try {
+    connection = await pool.getConnection();
     const [result] = await connection.execute(
       "DELETE FROM Transaction WHERE id = ?",
       [id]
@@ -111,7 +170,12 @@ async function deleteTransaction(id) {
     return null;
   } catch (error) {
     console.error("Erro ao excluir a transação:", error);
+    logger.error("Erro ao excluir a transação:", error);
     throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 

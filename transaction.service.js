@@ -16,6 +16,13 @@ async function connectToDatabase() {
     database: process.env.DATABASE,
   });
   console.log("Conexão com o banco de dados estabelecida com sucesso");
+  connection.connect(function (err) {
+    if (err) {
+      console.log(`connectionRequest Failed ${err.stack}`);
+    } else {
+      console.log(`DB connectionRequest Successful ${connection.threadId}`);
+    }
+  });
 }
 
 async function createTransaction(value, type, description) {

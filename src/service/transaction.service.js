@@ -4,22 +4,23 @@ let connection;
 
 async function connectToDatabase() {
   connection = await mysql.createConnection({
-    host: "finances1.mysql.uhserver.com",
-    user: "jailson1",
-    password: "",
-    database: "",
+    host: process.env.HOST,
+    user: process.env.USERDATABASE,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
   });
   console.log("Conexão com o banco de dados estabelecida com sucesso");
 }
 
-async function createTransaction(value, type, createdAt, description) {
+async function createTransaction(value, type, description) {
   try {
     const [result] = await connection.execute(
-      "INSERT INTO Transaction (value, type, createdAt, description) VALUES (?, ?, ?, ?)",
-      [value, type, createdAt, description]
+      "INSERT INTO Transaction (value, type, description) VALUES (?, ?, ?)",
+      [value, type, description]
     );
+    const newTransactionId = result.insertId;
     console.log("Transação criada com sucesso");
-    return { id, createdAt, type, value, description };
+    return { id: newTransactionId, value, type, description };
   } catch (error) {
     console.error("Erro ao criar a transação:", error);
     throw error;

@@ -1,15 +1,14 @@
 const express = require("express");
-const transactionService = require("./transaction.service");
+const transactionService = require("../service/transaction.service");
 
 const router = express.Router();
 
 router.post("/", async (req, res, next) => {
   try {
-    const { createdAt, type, value, description } = req.body;
+    const { value, type, description } = req.body;
     const transaction = await transactionService.createTransaction(
-      createdAt,
-      type,
       value,
+      type,
       description
     );
     res.json(transaction);

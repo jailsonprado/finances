@@ -1,5 +1,9 @@
 require("dotenv").config();
+const { format } = require("date-fns");
 
+function formatDate(date) {
+  return format(new Date(date), "dd/MM/yyyy");
+}
 const mysql = require("mysql2/promise");
 
 let connection;
@@ -54,9 +58,11 @@ async function getTransactionsByType(type) {
 
 async function getTransactionsByTypeAndDateRange(type, startDate, endDate) {
   try {
+    const formattedStartDate = formatDate(startDate);
+    const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE type = ? AND createdAt BETWEEN ? AND ?",
-      [type, startDate, endDate]
+      "SELECT * FROM Transaction WHERE type = ? AND DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ?",
+      [type, formattedStartDate, formattedEndDate]
     );
     return rows;
   } catch (error) {

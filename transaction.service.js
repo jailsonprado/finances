@@ -66,9 +66,7 @@ async function getAllTransactions() {
 
   try {
     connection = await pool.getConnection();
-    const [rows] = await connection.execute(
-      "SELECT * FROM Transaction ORDER BY createdAt DESC"
-    );
+    const [rows] = await connection.execute("SELECT * FROM Transaction");
     return rows;
   } catch (error) {
     console.error("Erro ao obter todas as transações:", error);
@@ -87,7 +85,7 @@ async function getTransactionsByType(type) {
   try {
     connection = await pool.getConnection();
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE type = ? ORDER BY createdAt DESC",
+      "SELECT * FROM Transaction WHERE type = ?",
       [type]
     );
     return rows;
@@ -139,7 +137,7 @@ async function getTransactionsByDateRange(startDate, endDate) {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ? ORDER BY createdAt DESC",
+      "SELECT * FROM Transaction WHERE DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ?",
       [formattedStartDate, formattedEndDate]
     );
     return rows;

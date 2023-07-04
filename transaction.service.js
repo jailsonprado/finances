@@ -129,6 +129,29 @@ async function getTransactionsByTypeAndDateRange(type, startDate, endDate) {
   }
 }
 
+async function getTransactionsByDateRange(startDate, endDate) {
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    const formattedStartDate = formatDate(startDate);
+    const formattedEndDate = formatDate(endDate);
+    const [rows] = await connection.execute(
+      "SELECT * FROM Transaction WHERE DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ?",
+      [formattedStartDate, formattedEndDate]
+    );
+    return rows;
+  } catch (error) {
+    console.error("Erro ao obter transações por intervalo de datas:", error);
+    logger.error("Erro ao obter transações por intervalo de datas:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
+  }
+}
+
 async function updateTransaction(id, data) {
   let connection;
 
@@ -185,6 +208,7 @@ module.exports = {
   getAllTransactions,
   getTransactionsByType,
   getTransactionsByTypeAndDateRange,
+  getTransactionsByDateRange,
   updateTransaction,
   deleteTransaction,
 };

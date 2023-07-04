@@ -52,6 +52,19 @@ router.get("/type/:type/range", async (req, res, next) => {
   }
 });
 
+router.get("/range", async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const transactions = await transactionService.getTransactionsByDateRange(
+      startDate,
+      endDate
+    );
+    res.json(transactions);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.put("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;

@@ -2,7 +2,7 @@ const express = require("express");
 const transactionService = require("./transaction.service");
 
 const app = express();
-const port = 3000;
+const port = 3003;
 
 app.use(express.json());
 

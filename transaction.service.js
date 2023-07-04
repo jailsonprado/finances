@@ -134,11 +134,9 @@ async function getTransactionsByDateRange(startDate, endDate) {
 
   try {
     connection = await pool.getConnection();
-    const formattedStartDate = formatDate(startDate);
-    const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ?",
-      [formattedStartDate, formattedEndDate]
+      "SELECT * FROM Transaction WHERE DATE(createdAt) >= ? AND DATE(createdAt) <= ?",
+      [startDate, endDate]
     );
     return rows;
   } catch (error) {

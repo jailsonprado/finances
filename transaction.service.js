@@ -110,7 +110,7 @@ async function getTransactionsByTypeAndDateRange(type, startDate, endDate) {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE type = ? AND DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ? ORDER BY createdAt DESC",
+      "SELECT * FROM Transaction WHERE type = ? AND DATE_FORMAT(createdAt, '%d/%m/%Y') BETWEEN ? AND ?",
       [type, formattedStartDate, formattedEndDate]
     );
     return rows;

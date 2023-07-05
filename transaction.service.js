@@ -66,7 +66,9 @@ async function getAllTransactions() {
 
   try {
     connection = await pool.getConnection();
-    const [rows] = await connection.execute("SELECT * FROM Transaction");
+    const [rows] = await connection.execute(
+      "SELECT * FROM Transaction ORDER BY createdAt DESC"
+    );
     return rows;
   } catch (error) {
     console.error("Erro ao obter todas as transações:", error);
@@ -85,7 +87,7 @@ async function getTransactionsByType(type) {
   try {
     connection = await pool.getConnection();
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE type = ?",
+      "SELECT * FROM Transaction WHERE type = ? ORDER BY createdAt DESC",
       [type]
     );
     return rows;
@@ -108,7 +110,7 @@ async function getTransactionsByTypeAndDateRange(type, startDate, endDate) {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE type = ? AND DATE(createdAt) BETWEEN STR_TO_DATE(?, '%d/%m/%Y') AND STR_TO_DATE(?, '%d/%m/%Y')",
+      "SELECT * FROM Transaction WHERE type = ? AND DATE(createdAt) BETWEEN STR_TO_DATE(?, '%d/%m/%Y') AND STR_TO_DATE(?, '%d/%m/%Y') ORDER BY createdAt DESC",
       [type, formattedStartDate, formattedEndDate]
     );
     return rows;
@@ -137,7 +139,7 @@ async function getTransactionsByDateRange(startDate, endDate) {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
     const [rows] = await connection.execute(
-      "SELECT * FROM Transaction WHERE DATE(createdAt) BETWEEN STR_TO_DATE(?, '%d/%m/%Y') AND STR_TO_DATE(?, '%d/%m/%Y')",
+      "SELECT * FROM Transaction WHERE DATE(createdAt) BETWEEN STR_TO_DATE(?, '%d/%m/%Y') AND STR_TO_DATE(?, '%d/%m/%Y') ORDER BY createdAt DESC",
       [formattedStartDate, formattedEndDate]
     );
     return rows;

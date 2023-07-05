@@ -1,8 +1,18 @@
 const express = require("express");
 const transactionService = require("../transaction.service");
 
+function verifyApiKey(req, res, next) {
+  const apiKey = req.headers["api-key"];
+  if (apiKey && apiKey === process.env.API_KEY) {
+    next();
+  } else {
+    res.sendStatus(401);
+  }
+}
+
 const router = express.Router();
 
+router.use(verifyApiKey);
 router.post("/", async (req, res, next) => {
   try {
     const { value, type, description } = req.body;
